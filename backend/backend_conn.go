@@ -289,8 +289,7 @@ func (c *Conn) writeAuthHandshake() error {
 
 	// db [null terminated string]
 	if len(c.db) > 0 {
-		pos += copy(data[pos:], c.db)
-		//data[pos] = 0x00
+		pos += 1 + copy(data[pos:], c.db)
 	}
 
 	if mysql.MYSQL_NATIVE_PASSWORD_AUTH_NAME == c.authPlugin {
