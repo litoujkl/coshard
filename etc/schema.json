@@ -1,0 +1,117 @@
+[
+  {
+    "name": "demo",
+    "charset": "utf8mb4",
+    "shards": [
+      {
+        "name": "demo",
+        "index": 0,
+        "datanode": "dn0",
+        "database": "demo",
+        "type": "default"
+      },
+      {
+        "name": "demo_1",
+        "index": 1,
+        "datanode": "dn1",
+        "database": "demo_0001",
+        "type": "split"
+      },
+      {
+        "name": "demo_2",
+        "index": 2,
+        "datanode": "dn1",
+        "database": "demo_0002",
+        "type": "split"
+      },
+      {
+        "name": "demo_3",
+        "index": 3,
+        "datanode": "dn1",
+        "database": "demo_0003",
+        "type": "split"
+      },
+      {
+        "name": "demo_4",
+        "index": 4,
+        "datanode": "dn1",
+        "database": "demo_0004",
+        "type": "split"
+      },
+      {
+        "name": "demo_5",
+        "index": 5,
+        "datanode": "dn2",
+        "database": "demo_0005",
+        "type": "split"
+      },
+      {
+        "name": "demo_6",
+        "index": 6,
+        "datanode": "dn2",
+        "database": "demo_0006",
+        "type": "split"
+      },
+      {
+        "name": "demo_7",
+        "index": 7,
+        "datanode": "dn2",
+        "database": "demo_0007",
+        "type": "split"
+      },
+      {
+        "name": "demo_8",
+        "index": 8,
+        "datanode": "dn2",
+        "database": "demo_0008",
+        "type": "split"
+      }
+    ],
+    "rules": [
+      {
+        "name": "r_list",
+        "algorithm": "list",
+        "props": {
+          "map": [
+            "A=1",
+            "B=2",
+            "C=3",
+            "D=4",
+            "E=5",
+            "F=6",
+            "G=7",
+            "H=8"
+          ],
+          "default_shard": 0
+        }
+      },
+      {
+        "name": "r_hash",
+        "algorithm": "hash",
+        "props": {
+          "shard_count": 8
+        }
+      }
+    ],
+    "tables": [
+      {
+        "name": "t_list",
+        "type": "split",
+        "shard_count": 8,
+        "shard_key": "col1",
+        "rule_name": "r_list",
+        "primary_key": "id",
+        "pk_incr_type": "none"
+      },
+      {
+        "name": "t_hash",
+        "type": "split",
+        "shard_count": 8,
+        "shard_key": "col1",
+        "rule_name": "r_hash",
+        "primary_key": "id",
+        "pk_incr_type": "none"
+      }
+    ]
+  }
+]

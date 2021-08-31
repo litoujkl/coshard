@@ -1,0 +1,68 @@
+[
+  {
+    "name": "dn0",
+    "min_connection": 1,
+    "max_connection": 100,
+    "user": "root",
+    "password": "lili000",
+    "type": "default",
+    "dataServers": [
+      {
+        "name": "dn0_prd",
+        "type": "normal",
+        "ip": "127.0.0.1",
+        "port": 3306
+      },
+      {
+        "name": "dn0_r01",
+        "type": "read",
+        "ip": "127.0.0.1",
+        "port": 3360
+      }
+    ]
+  },
+  {
+    "name": "dn1",
+    "min_connection": 1,
+    "max_connection": 100,
+    "user": "root",
+    "password": "lili000",
+    "type": "split",
+    "dataServers": [
+      {
+        "name": "dn1_prd",
+        "type": "normal",
+        "ip": "127.0.0.1",
+        "port": 3307
+      }
+    , {
+        "name": "dn1_r01",
+        "type": "read",
+        "ip": "127.0.0.1",
+        "port": 3370
+      }
+    ]
+  },
+  {
+    "name": "dn2",
+    "min_connection": 1,
+    "max_connection": 100,
+    "user": "root",
+    "password": "lili000",
+    "type": "split",
+    "dataServers": [
+      {
+        "name": "dn2_prd",
+        "type": "normal",
+        "ip": "127.0.0.1",
+        "port": 3308
+      },
+      {
+        "name": "dn2_r01",
+        "type": "read",
+        "ip": "127.0.0.1",
+        "port": 3380
+      }
+    ]
+  }
+]
