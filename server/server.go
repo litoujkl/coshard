@@ -3,32 +3,58 @@ package server
 import (
 	"coshard/config"
 	"coshard/mysql"
+	"coshard/router"
 	"net"
 	"sync/atomic"
 )
 
 type Server struct {
-	addr string
-	
+	Addr string
+
 	listener net.Listener
-	
-	users map[string]string
+
+	Users   map[string]string
+	Schemas map[string]Schema
 
 	running bool
 }
 
+type Schema struct {
+	Name         string
+	Tables       map[string]Table
+	DefaultShard string
+}
+
+type Table struct {
+	Name       string
+	PrimaryKey string
+	Type       string
+	Rule       Rule
+	ShardKey   string
+	Schema     Schema
+}
+
+type Rule struct {
+	Name      string
+	Algorithm router.ShardAlgorithm
+}
+
+type Shard struct {
+	Name string
+}
+
 func NewServer(cfg *config.CoShardConfig) (*Server, error) {
 	s := new(Server)
-	s.addr = cfg.Addr
-	s.users = make(map[string]string)
+	s.Addr = cfg.Addr
+	s.Users = make(map[string]string)
 	for _, user := range cfg.Users {
-		s.users[user.User] = user.Password
+		s.Users[user.User] = user.Password
 	}
 
 	var err error
 	netProto := "tcp"
 
-	s.listener, err = net.Listen(netProto, s.addr)
+	s.listener, err = net.Listen(netProto, s.Addr)
 
 	if err != nil {
 		return nil, err
@@ -69,13 +95,6 @@ func (s *Server) onConn(c net.Conn) {
 func (s *Server) newClientConn(co net.Conn) *ClientConn {
 	c := new(ClientConn)
 	tcpConn := co.(*net.TCPConn)
-
-	//SetNoDelay controls whether the operating system should delay packet transmission
-	// in hopes of sending fewer packets (Nagle's algorithm).
-	// The default is true (no delay),
-	// meaning that data is sent as soon as possible after a Write.
-	//I set this option false.
-	tcpConn.SetNoDelay(false)
 	c.c = tcpConn
 
 	c.pkg = mysql.NewPacketIO(tcpConn)
@@ -96,4 +115,3 @@ func (s *Server) newClientConn(co net.Conn) *ClientConn {
 
 	return c
 }
-

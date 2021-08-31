@@ -54,7 +54,7 @@ type ClientConn struct {
 
 var DEFAULT_CAPABILITY = mysql.CLIENT_LONG_PASSWORD |
 	mysql.CLIENT_LONG_FLAG | mysql.CLIENT_CONNECT_WITH_DB |
-	mysql.CLIENT_PROTOCOL_41 | mysql.CLIENT_TRANSACTIONS|
+	mysql.CLIENT_PROTOCOL_41 | mysql.CLIENT_TRANSACTIONS |
 	mysql.CLIENT_SECURE_CONNECTION | mysql.CLIENT_PLUGIN_AUTH
 
 var baseConnId uint32 = 10000
@@ -198,7 +198,7 @@ func (c *ClientConn) readHandshakeResponse(gotSwitchAuth bool) error {
 	}
 
 	//check user
-	if _, ok := c.proxy.users[c.user]; !ok {
+	if _, ok := c.proxy.Users[c.user]; !ok {
 		return mysql.NewDefaultError(mysql.ER_ACCESS_DENIED_ERROR, c.user, c.c.RemoteAddr().String(), "Yes")
 	}
 
@@ -251,7 +251,7 @@ func (c *ClientConn) setSchema(pos int, data []byte) {
 }
 
 func (c *ClientConn) checkPassword(auth []byte) *mysql.SqlError {
-	checkAuth := mysql.CalcPassword(c.salt, []byte(c.proxy.users[c.user]))
+	checkAuth := mysql.CalcPassword(c.salt, []byte(c.proxy.Users[c.user]))
 	if !bytes.Equal(auth, checkAuth) {
 		return mysql.NewDefaultError(mysql.ER_ACCESS_DENIED_ERROR, c.user, c.c.RemoteAddr().String(), "Yes")
 	}
