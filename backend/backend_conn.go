@@ -99,17 +99,22 @@ func (c *Conn) ReConnect() error {
 	}
 
 	// for mysql 8.0
-	// auth switch
 	if mysql.CACHING_SHA2_PASSWORD_AUTH_NAME == c.authPlugin {
-		if err := c.doAuthSwitch(); err != nil {
+		data, err := c.readPacket()
+		if err != nil {
 			return err
+		}
+		if len(data) != 2 {
+			// unexpected
 		}
 	}
 
-	if _, err := c.readOK(); err != nil {
-		c.conn.Close()
+	if mysql.MYSQL_NATIVE_PASSWORD_AUTH_NAME == c.authPlugin {
+		if _, err := c.readOK(); err != nil {
+			c.conn.Close()
 
-		return err
+			return err
+		}
 	}
 
 	//we must always use autocommit
@@ -203,18 +208,6 @@ func (c *Conn) readInitialHandshake() error {
 		c.authPlugin = string(data[pos : pos+bytes.IndexByte(data[pos:], 0x00)])
 	}
 
-	return nil
-}
-
-func (c *Conn) doAuthSwitch() error {
-	// read auth switch request
-	response, err := c.readPacket()
-	if err != nil {
-		return err
-	}
-	if len(response) != 2 {
-		// unexpected
-	}
 	return nil
 }
 
