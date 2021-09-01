@@ -1,0 +1,4 @@
+fetchSize抓包case：
+
+
+tcp.dstport == 49931 and tcp.srcport == 3306

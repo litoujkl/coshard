@@ -104,17 +104,31 @@ func (c *Conn) ReConnect() error {
 		if err != nil {
 			return err
 		}
-		if len(data) != 2 {
-			// unexpected
+		if len(data) == 2 && data[0] == 0x01 {
+			if data[1] == 0x03 { // fast auth
+				// to read ok
+			} else if data[1] == 0x04 { // full auth
+				data = make([]byte, 1+4)
+				data[4] = 0x02
+				err = c.writePacket(data)
+				if err != nil {
+					return err
+				}
+				// get public key
+				publicKey, err := c.readPacket()
+				if err != nil {
+					return err
+				}
+				fmt.Printf("got public key: %s\n", publicKey)
+				// TODO: public key encrypt
+			}
 		}
 	}
 
-	if mysql.MYSQL_NATIVE_PASSWORD_AUTH_NAME == c.authPlugin {
-		if _, err := c.readOK(); err != nil {
-			c.conn.Close()
+	if _, err := c.readOK(); err != nil {
+		c.conn.Close()
 
-			return err
-		}
+		return err
 	}
 
 	//we must always use autocommit
