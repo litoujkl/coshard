@@ -9,4 +9,6 @@
   - `0x03`  fast auth
   - `0x04`  full auth
   
+- 正常`AuthSwitchRequest`包的`data[4]`为`0xfe`
+  
 - https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::AuthMoreData

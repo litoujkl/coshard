@@ -12,6 +12,15 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+/**
+ * Backend connection
+ * - support auth for mysql 8.0
+ *   - full auth
+ *   - fast auth
+ *
+ * @author sj
+ */
+
 package backend
 
 import (

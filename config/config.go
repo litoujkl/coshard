@@ -1,7 +1,12 @@
+/**
+ * Shard config
+ *
+ * @author sj
+ */
 package config
 
 type CoShardConfig struct {
-	Addr    string `yaml:"addr"`
+	Addr string `yaml:"addr"`
 
 	Schemas map[string]SchemaConfig
 	Nodes   map[string]DataNodeConfig

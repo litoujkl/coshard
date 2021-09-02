@@ -1,3 +1,9 @@
+/**
+ * runtime config
+ *
+ * @author sj
+ */
+
 package server
 
 import (

@@ -1,3 +1,8 @@
+/**
+ * Startup
+ *
+ * @author sj
+ */
 package main
 
 import (
@@ -5,8 +10,8 @@ import (
 	"coshard/server"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 var (
@@ -17,7 +22,7 @@ var (
 	userConfigFileName     = "etc/user.json"
 )
 
-func main()  {
+func main() {
 	fmt.Println("---------coshard-----------")
 	cfg, err := loadConfig()
 	if err != nil {

@@ -12,6 +12,12 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+/**
+ * frontend connection
+ * - support mysql 8.0 client, MySQL Connector/J 8.0
+ *
+ * @author sj
+ */
 package server
 
 import (
