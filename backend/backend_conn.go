@@ -17,7 +17,10 @@ package backend
 import (
 	"bytes"
 	"coshard/mysql"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/binary"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"net"
@@ -115,12 +118,24 @@ func (c *Conn) ReConnect() error {
 					return err
 				}
 				// get public key
-				publicKey, err := c.readPacket()
+				response, err := c.readPacket()
 				if err != nil {
 					return err
 				}
-				fmt.Printf("got public key: %s\n", publicKey)
-				// TODO: public key encrypt
+				block, _ := pem.Decode(response[1:])
+				pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+				if err != nil {
+					return err
+				}
+				encryptedPassword, err := mysql.EncryptPasswordWithPublicKey(c.salt, []byte(c.password), pub.(*rsa.PublicKey))
+				if err != nil {
+					return err
+				}
+				data = make([]byte, len(encryptedPassword)+4)
+				copy(data[4:], encryptedPassword)
+				if err = c.writePacket(data); err != nil {
+					return err
+				}
 			}
 		}
 	}

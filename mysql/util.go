@@ -15,15 +15,37 @@
 package mysql
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
 	"io"
-	"math/rand"
+	mrand "math/rand"
 	"time"
 	"unicode/utf8"
 )
+
+func EncryptPasswordWithPublicKey(salt []byte, password []byte, pub *rsa.PublicKey) ([]byte, error) {
+	if len(password) == 0 {
+		return nil, nil
+	}
+
+	buffer := make([]byte, len(password)+1)
+	copy(buffer, password)
+	for i := range buffer {
+		buffer[i] ^= salt[i%len(salt)]
+	}
+
+	sha1Hash := sha1.New()
+	enc, err := rsa.EncryptOAEP(sha1Hash, rand.Reader, pub, buffer, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return enc, nil
+}
 
 func CalcCachingSha2Password(salt []byte, password []byte) []byte {
 	if len(password) == 0 {
@@ -85,10 +107,10 @@ func CalcPassword(scramble, password []byte) []byte {
 // seed must be in the range of ascii
 func RandomBuf(size int) ([]byte, error) {
 	buf := make([]byte, size)
-	rand.Seed(time.Now().UTC().UnixNano())
+	mrand.Seed(time.Now().UTC().UnixNano())
 	min, max := 30, 127
 	for i := 0; i < size; i++ {
-		buf[i] = byte(min + rand.Intn(max-min))
+		buf[i] = byte(min + mrand.Intn(max-min))
 	}
 	return buf, nil
 }
