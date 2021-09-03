@@ -12,6 +12,7 @@ import (
 	"coshard/mysql"
 	"coshard/router"
 	"coshard/util"
+	"fmt"
 	"net"
 	"sync/atomic"
 )
@@ -31,6 +32,7 @@ type Server struct {
 type Schema struct {
 	Name      string
 	Tables    map[string]*Table
+	Rules     map[string]*Rule
 	AllShards []Shard
 }
 
@@ -80,13 +82,30 @@ func NewServer(cfg *config.CoShardConfig) (*Server, error) {
 	schemaMap := make(map[string]*Schema)
 	for _, s := range cfg.Schemas {
 		schema := new(Schema)
+
+		// shards
 		var shards []Shard
-		if err := util.DeepCopy(shards, s.Shards); err != nil {
+		if err := util.DeepCopy(&shards, s.Shards); err != nil {
 			return nil, err
 		}
 		schema.Name = s.Name
 		schema.AllShards = shards
 
+		// rules
+		rules := make(map[string]*Rule)
+		for _, r := range s.Rules {
+			rule := new(Rule)
+			rule.Name = r.Name
+			if router.AlgList == r.Algorithm {
+				shardByList := new(router.ShardByList)
+				shardByList.Init(r.Props)
+				rule.Algorithm = shardByList
+			}
+			rules[r.Name] = rule
+		}
+		schema.Rules = rules
+
+		// tables
 		tables := make(map[string]*Table)
 		for _, t := range s.Tables {
 			table := new(Table)
@@ -96,6 +115,11 @@ func NewServer(cfg *config.CoShardConfig) (*Server, error) {
 			table.ShardKey = t.ShardKey
 			table.PrimaryKey = t.PrimaryKey
 			// init rule
+			v := rules[t.RuleName]
+			if v == nil {
+				return nil, fmt.Errorf("rule: %s doesn't exist", t.RuleName)
+			}
+			table.Rule = v
 			tables[t.Name] = table
 		}
 		schema.Tables = tables

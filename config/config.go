@@ -44,8 +44,8 @@ type DataServerConfig struct {
 	// - normal: 读写实例 read and write
 	// - read: 只读实例 read only
 	Type string `json:"type"`
-	Ip   string `json:"ip"`
-	Port int    `json:"port"`
+	// ip:port
+	Addr string `json:"addr"`
 }
 
 // schema
@@ -76,10 +76,8 @@ type RuleConfig struct {
 	// Algorithm:
 	// - list
 	// - hash
-	Algorithm string `json:"algorithm"`
-
-	// map[string]interface{}
-	Props interface{} `json:"props"`
+	Algorithm string                 `json:"algorithm"`
+	Props     map[string]interface{} `json:"props"`
 }
 
 // table config

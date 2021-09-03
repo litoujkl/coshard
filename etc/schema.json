@@ -72,7 +72,7 @@
         "name": "r_list",
         "algorithm": "list",
         "props": {
-          "map": [
+          "mappings": [
             "A=1",
             "B=2",
             "C=3",
@@ -84,13 +84,6 @@
           ],
           "default_shard": 0
         }
-      },
-      {
-        "name": "r_hash",
-        "algorithm": "hash",
-        "props": {
-          "shard_count": 8
-        }
       }
     ],
     "tables": [
@@ -100,15 +93,6 @@
         "shard_count": 8,
         "shard_key": "col1",
         "rule_name": "r_list",
-        "primary_key": "id",
-        "pk_incr_type": "none"
-      },
-      {
-        "name": "t_hash",
-        "type": "split",
-        "shard_count": 8,
-        "shard_key": "col1",
-        "rule_name": "r_hash",
         "primary_key": "id",
         "pk_incr_type": "none"
       }
