@@ -18,8 +18,8 @@ import (
 	"testing"
 )
 
-func newTestConn() *Conn {
-	c := new(Conn)
+func newTestConn() *MySQLConn {
+	c := new(MySQLConn)
 
 	if err := c.Connect("127.0.0.1:3307", "root", "lili000", ""); err != nil {
 		panic(err)

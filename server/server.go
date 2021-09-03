@@ -7,6 +7,7 @@
 package server
 
 import (
+	"coshard/backend"
 	"coshard/config"
 	"coshard/mysql"
 	"coshard/router"
@@ -20,14 +21,15 @@ type Server struct {
 	listener net.Listener
 
 	Users   map[string]string
-	Schemas map[string]Schema
+	Schemas map[string]*Schema
+	DBPools map[string]*backend.DBPool
 
 	running bool
 }
 
 type Schema struct {
 	Name         string
-	Tables       map[string]Table
+	Tables       map[string]*Table
 	DefaultShard string
 }
 
@@ -35,9 +37,9 @@ type Table struct {
 	Name       string
 	PrimaryKey string
 	Type       string
-	Rule       Rule
+	Rule       *Rule
 	ShardKey   string
-	Schema     Schema
+	Schema     *Schema
 }
 
 type Rule struct {
@@ -45,17 +47,30 @@ type Rule struct {
 	Algorithm router.ShardAlgorithm
 }
 
-type Shard struct {
-	Name string
-}
-
 func NewServer(cfg *config.CoShardConfig) (*Server, error) {
 	s := new(Server)
 	s.Addr = cfg.Addr
+
+	// users
 	s.Users = make(map[string]string)
 	for _, user := range cfg.Users {
 		s.Users[user.User] = user.Password
 	}
+
+	// node db pool
+	dbPoolMap := make(map[string]*backend.DBPool)
+	for _, node := range cfg.Nodes {
+		pool, err := backend.NewDBPool(node)
+		if err != nil {
+			return nil, err
+		}
+		dbPoolMap[node.Name] = pool
+	}
+
+	// schemas
+	//schemaMap := make(map[string]*Schema)
+	//for _, schema := range cfg.Schemas {
+	//}
 
 	var err error
 	netProto := "tcp"

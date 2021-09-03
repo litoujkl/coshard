@@ -39,37 +39,25 @@ func loadConfig() (*config.CoShardConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeMap := make(map[string]config.DataNodeConfig)
-	for _, node := range *nodes {
-		nodeMap[node.Name] = node
-	}
 
 	schemas, err := parseSchemas(schemaConfigFileName)
 	if err != nil {
 		return nil, err
-	}
-	schemaMap := make(map[string]config.SchemaConfig)
-	for _, schema := range *schemas {
-		schemaMap[schema.Name] = schema
 	}
 
 	users, err := parseUsers(userConfigFileName)
 	if err != nil {
 		return nil, err
 	}
-	userMap := make(map[string]config.UserConfig)
-	for _, user := range *users {
-		userMap[user.User] = user
-	}
 
 	cfg := new(config.CoShardConfig)
-	cfg.Nodes = nodeMap
-	cfg.Schemas = schemaMap
-	cfg.Users = userMap
+	cfg.Nodes = *nodes
+	cfg.Schemas = *schemas
+	cfg.Users = *users
 
 	err = parseMainConfig(coShardConfigFileName, cfg)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	return cfg, nil

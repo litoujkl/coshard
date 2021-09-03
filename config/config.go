@@ -8,9 +8,9 @@ package config
 type CoShardConfig struct {
 	Addr string `yaml:"addr"`
 
-	Schemas map[string]SchemaConfig
-	Nodes   map[string]DataNodeConfig
-	Users   map[string]UserConfig
+	Schemas []SchemaConfig
+	Nodes   []DataNodeConfig
+	Users   []UserConfig
 }
 
 type UserConfig struct {
