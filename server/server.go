@@ -11,6 +11,7 @@ import (
 	"coshard/config"
 	"coshard/mysql"
 	"coshard/router"
+	"coshard/util"
 	"net"
 	"sync/atomic"
 )
@@ -28,9 +29,9 @@ type Server struct {
 }
 
 type Schema struct {
-	Name         string
-	Tables       map[string]*Table
-	DefaultShard string
+	Name      string
+	Tables    map[string]*Table
+	AllShards []Shard
 }
 
 type Table struct {
@@ -40,6 +41,14 @@ type Table struct {
 	Rule       *Rule
 	ShardKey   string
 	Schema     *Schema
+}
+
+type Shard struct {
+	Name     string
+	Index    int
+	Datanode string
+	Database string
+	Type     string
 }
 
 type Rule struct {
@@ -68,9 +77,31 @@ func NewServer(cfg *config.CoShardConfig) (*Server, error) {
 	}
 
 	// schemas
-	//schemaMap := make(map[string]*Schema)
-	//for _, schema := range cfg.Schemas {
-	//}
+	schemaMap := make(map[string]*Schema)
+	for _, s := range cfg.Schemas {
+		schema := new(Schema)
+		var shards []Shard
+		if err := util.DeepCopy(shards, s.Shards); err != nil {
+			return nil, err
+		}
+		schema.Name = s.Name
+		schema.AllShards = shards
+
+		tables := make(map[string]*Table)
+		for _, t := range s.Tables {
+			table := new(Table)
+			table.Name = t.Name
+			table.Schema = schema
+			table.Type = t.Type
+			table.ShardKey = t.ShardKey
+			table.PrimaryKey = t.PrimaryKey
+			// init rule
+			tables[t.Name] = table
+		}
+		schema.Tables = tables
+
+		schemaMap[s.Name] = schema
+	}
 
 	var err error
 	netProto := "tcp"
