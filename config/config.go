@@ -9,7 +9,7 @@ type CoShardConfig struct {
 	Addr string `yaml:"addr"`
 
 	Schemas []SchemaConfig
-	Nodes   []DataNodeConfig
+	Nodes   []DatanodeConfig
 	Users   []UserConfig
 }
 
@@ -20,7 +20,7 @@ type UserConfig struct {
 
 // backend nodes config
 // 存储节点
-type DataNodeConfig struct {
+type DatanodeConfig struct {
 	Name          string `json:"name"`
 	MinConnection int    `json:"min_connection"`
 	MaxConnection int    `json:"max_connection"`

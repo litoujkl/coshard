@@ -6,7 +6,12 @@
 
 package backend
 
-import "coshard/config"
+import (
+	"coshard/config"
+	"errors"
+	"sync"
+	"time"
+)
 
 const (
 	normalServer = "normal"
@@ -15,7 +20,7 @@ const (
 type DBPool struct {
 	init bool
 
-	dataNode string
+	datanode string
 
 	writeSources []DataSource
 	//readSources TODO
@@ -23,10 +28,62 @@ type DBPool struct {
 }
 
 type DataSource struct {
+	sync.RWMutex
+
+	addr     string
+	user     string
+	password string
+
 	maxConn int
 	minConn int
 
-	connections chan *PooledConnection
+	connMap map[*PooledConnection]bool
+
+	idles chan *PooledConnection
+
+	destroyConnTask time.Ticker
+}
+
+func (ds *DataSource) GetConnection() (*PooledConnection, error) {
+	select {
+	case r, ok := <-ds.idles:
+		if !ok {
+			return nil, errors.New("poolClosed")
+		}
+		r.borrowed = true
+		ds.Lock()
+		ds.connMap[r] = true
+		ds.Unlock()
+		return r, nil
+	default:
+		ds.Lock()
+		poolSize := len(ds.connMap)
+		if poolSize < ds.maxConn {
+			// create a new conn
+			newConn := new(PooledConnection)
+			if err := newConn.initConnection(ds.addr, ds.user, ds.password); err != nil {
+				//
+			}
+			newConn.borrowed = true
+			ds.connMap[newConn] = true
+			ds.Unlock()
+			return newConn, nil
+		} else {
+			// reached maxConn, wait idles available
+			ds.Unlock()
+			r := <-ds.idles
+			return r, nil
+		}
+	}
+}
+
+func (ds *DataSource) ReleaseConnection(conn *PooledConnection) {
+	conn.borrowed = false
+	ds.idles <- conn
+
+	ds.Lock()
+	ds.connMap[conn] = true
+	ds.Unlock()
 }
 
 type PooledConnection struct {
@@ -34,10 +91,9 @@ type PooledConnection struct {
 	conn     *MySQLConn
 }
 
-func NewDBPool(config config.DataNodeConfig) (*DBPool, error) {
+func NewDBPool(config config.DatanodeConfig) (*DBPool, error) {
 	dbPool := new(DBPool)
-	dbPool.dataNode = config.Name
-
+	dbPool.datanode = config.Name
 	var writeSources []DataSource
 
 	for _, dataServer := range config.DataServers {
@@ -54,16 +110,26 @@ func NewDBPool(config config.DataNodeConfig) (*DBPool, error) {
 	return dbPool, nil
 }
 
-func (dataSource *DataSource) initDataSource(minConn int, maxConn int, addr string, user string, password string) {
-	connections := make(chan *PooledConnection, maxConn)
+func (ds *DataSource) initDataSource(minConn int, maxConn int, addr string, user string, password string) {
+	ds.addr = addr
+	ds.user = user
+	ds.password = password
+
+	connMap := make(map[*PooledConnection]bool)
+	idles := make(chan *PooledConnection, maxConn)
 	if minConn > 0 {
 		for i := 0; i < minConn; i++ {
 			dbConn := new(PooledConnection)
-			dbConn.initConnection(addr, user, password)
-			connections <- dbConn
+			if err := dbConn.initConnection(addr, user, password); err != nil {
+				//
+			} else {
+				idles <- dbConn
+				connMap[dbConn] = true
+			}
 		}
 	}
-	dataSource.connections = connections
+	ds.connMap = connMap
+	ds.idles = idles
 }
 
 func (dbConn *PooledConnection) initConnection(addr string, user string, password string) error {

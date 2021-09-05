@@ -74,13 +74,13 @@ func parseMainConfig(fileName string, cfg *config.CoShardConfig) error {
 	return nil
 }
 
-func parseDataNodes(fileName string) (*[]config.DataNodeConfig, error) {
+func parseDataNodes(fileName string) (*[]config.DatanodeConfig, error) {
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
 
-	var cfg []config.DataNodeConfig
+	var cfg []config.DatanodeConfig
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return nil, err
 	}
