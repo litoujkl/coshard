@@ -62,8 +62,8 @@ type MySQLConn struct {
 
 	authPlugin string
 
-	pushTimestamp int64
-	pkgErr        error
+	lastActiveTime int64
+	pkgErr         error
 }
 
 func (c *MySQLConn) Connect(addr string, user string, password string, db string) error {
@@ -412,7 +412,7 @@ func (c *MySQLConn) Ping() error {
 		return err
 	}
 
-	c.pushTimestamp = time.Now().Unix()
+	c.lastActiveTime = time.Now().UnixNano()
 
 	return nil
 }
