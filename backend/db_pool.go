@@ -50,6 +50,7 @@ func (ds *DataSource) Acquire() (*PooledResource, error) {
 			// retry
 			newConn, err := ds.Acquire()
 			ds.idles <- MarkerNil
+			newConn.borrowed = true
 			return newConn, err
 		}
 		conn.borrowed = true
@@ -86,7 +87,7 @@ func (ds *DataSource) createOrWait() (*PooledResource, error) {
 				}
 			}
 		}
-
+		r.borrowed = true
 		return r, nil
 	}
 }
@@ -94,7 +95,7 @@ func (ds *DataSource) createOrWait() (*PooledResource, error) {
 func (ds *DataSource) Release(conn *PooledResource) {
 	conn.borrowed = false
 	ds.idles <- conn
-	fmt.Printf("push conn: %v time:%s\n", conn, time.Now().Format("2006-01-02 15:04:05"))
+	//fmt.Printf("push conn: %v time:%s\n", conn, time.Now().Format("2006-01-02 15:04:05"))
 }
 
 type PooledResource struct {
@@ -156,8 +157,6 @@ func (ds *DataSource) startCheckIdleConnTask() {
 		}
 
 		ds.idles <- MarkerNil
-		fmt.Printf("push MarkerNil time:%s\n", time.Now().Format("2006-01-02 15:04:05"))
-
 	loop:
 		for {
 			select {
